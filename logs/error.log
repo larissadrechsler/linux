@@ -1,0 +1,4 @@
+[2026-10-10 14:03:15] [error] [pid 1042] [client 172.16.0.8] Conexao com banco de dados falhou: connection timeout
+[2026-10-10 14:05:01] [error] [pid 1042] [client 172.16.0.8] Conexao com banco de dados falhou: connection timeout
+[2026-10-10 14:07:50] [error] [pid 1042] [client 172.16.0.8] Conexao com banco de dados falhou: connection timeout
+[2026-10-10 14:10:30] [error] [pid 1042] [client 172.16.0.8] Conexao com banco de dados falhou: connection timeout
