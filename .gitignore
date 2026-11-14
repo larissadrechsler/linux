@@ -1,0 +1,4 @@
+nodemodules/
+backend/.env
+logs/*.log
+*.tmp
