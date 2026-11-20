@@ -18,6 +18,9 @@ ps aux | grep "http.server 8080" | grep -v grep
 kill -15 $(cat pids/api.pid)
 ```
 
+**Saída obtida:**
+
+```text
 vboxuser@Ubuntu-Pos:~/app-producao$ mkdir -p pids
 vboxuser@Ubuntu-Pos:~/app-producao$ python3 -m http.server 8080 --directory backend > logs/api.log 2>&1 &
 [1] 5734
@@ -28,7 +31,9 @@ vboxuser@Ubuntu-Pos:~/app-producao$ ps aux | grep "http.server 8080" | grep -v g
 vboxuser    5734  0.3  0.8  38008 22492 pts/0    S    15:08   0:00 python3 -m http.server 8080 --directory backend
 vboxuser@Ubuntu-Pos:~/app-producao$ kill -15 $(cat pids/api.pid)
 [1]+  Terminated                 python3 -m http.server 8080 --directory backend > logs/api.log 2>&1
+```
 
+O PID `5734` mostrado pelo shell (`[1] 5734`) é o mesmo gravado em `pids/api.pid` e o mesmo que aparece no `ps aux`. Nessa linha, o processo ocupava cerca de 22 MB de RAM (coluna RSS, `22492` KB) e estava no estado `S` (dormindo, aguardando conexões). Depois do `kill -15`, o shell exibiu `Terminated`, confirmando o encerramento.
 
 ### Análise crítica
 
@@ -91,6 +96,8 @@ Buffers:            5948 kB
 Cached:           849216 kB
 ```
 
+*Observação:* os dois comandos acima foram executados em momentos diferentes, e a memória livre varia a cada instante. Por isso o `MemAvailable` (cerca de 0,8 GiB) e a coluna `available` do `free -h` (1,1 GiB) não coincidem exatamente.
+
 **Resumo das saídas:**
 
 | Informação pedida | Valor | Coluna |
@@ -108,8 +115,6 @@ Cached:           849216 kB
 - **available:** estimativa de quanto de memória pode ser entregue a novos programas sem usar swap. Ela soma o `free` e a parte do cache que pode ser devolvida. **É a coluna mais útil para avaliar se a máquina tem folga**: aqui, cerca de 1,1 GiB.
 
 Por isso, olhar só a coluna `free` engana: o Linux usa de propósito a RAM sobrando como cache. O que importa para a prontidão operacional é o `available`.
-
-Os dois comandos foram executados em momentos diferentes, por isso os valores variam um pouco.
 
 ### 2.2 Auditoria de armazenamento
 
@@ -272,4 +277,3 @@ signal.signal(signal.SIGTERM, encerrar)
 - SIGTERM permite o encerramento ordenado; SIGKILL deve ser o último recurso.
 - Para a prontidão operacional: na RAM, olhar a coluna `available` (e não a `free`); no disco, o `Use%` da raiz (32%); nas portas, `ss -tulpn` ou `lsof -i` para identificar nome e PID de quem escuta.
 - Em `top`/`htop`, a coluna **RES** é a que melhor representa a RAM física de um processo.
-

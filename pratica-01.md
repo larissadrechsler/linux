@@ -16,6 +16,9 @@ ln -s backend/api current-api
 ls -l current-api
 ```
 
+**Saída do `ls -la`:**
+
+```text
 vboxuser@Ubuntu-Pos:~/app-producao$ ls -la
 total 92
 drwxrwxr-x  9 vboxuser vboxuser  4096 Nov 20 15:20 .
@@ -34,8 +37,13 @@ drwxrwxr-x  2 vboxuser vboxuser  4096 Nov 16 23:28 pids
 -rw-rw-r--  1 vboxuser vboxuser 13737 Nov 20 15:20 pratica-03.md
 -rw-rw-r--  1 vboxuser vboxuser 10946 Nov 20 15:20 pratica-04.md
 drwxrwxr-x  2 vboxuser vboxuser  4096 Oct  8 22:52 scripts
+```
 
+Aqui aparecem os itens ocultos: `.` e `..` (diretório atual e diretório pai), a pasta `.git` e o arquivo `.gitignore`.
 
+**Saída do `ls -l backend/` e do link criado:**
+
+```text
 vboxuser@Ubuntu-Pos:~/app-producao$ ls -l backend/
 total 4
 drwxrwxr-x 2 vboxuser vboxuser 4096 Oct  8 22:51 api
@@ -43,8 +51,11 @@ drwxrwxr-x 2 vboxuser vboxuser 4096 Oct  8 22:51 api
 vboxuser@Ubuntu-Pos:~/app-producao$ ln -s backend/api current-api
 vboxuser@Ubuntu-Pos:~/app-producao$ ls -l current-api
 lrwxrwxrwx 1 vboxuser vboxuser 11 Nov  9 22:19 current-api -> backend/api
-vboxuser@Ubuntu-Pos:~/app-producao$ 
+```
 
+O `l` no início das permissões (`lrwxrwxrwx`) indica que `current-api` é um link simbólico, e a seta mostra o destino: `backend/api`.
+
+*Observação:* como o `current-api` já existia, ao repetir o `ln -s backend/api current-api` o `ln` tratou o link existente como uma pasta e criou um segundo link dentro de `backend/api` (`backend/api/api -> backend/api`), que ficou quebrado. Para evitar isso, o comando pode ser repetido com `ln -sfn`, que substitui o link existente em vez de criar outro dentro dele. O link extra foi removido com `rm backend/api/api` (que remove só o link, não a pasta real).
 
 ### Análise crítica
 
@@ -76,6 +87,8 @@ find . -name "*.tmp" -type f -exec rm -f {} +
 find . -name "*.tmp" -type f
 ```
 
+Os arquivos removidos eram os três `.tmp` do pacote base: `temp_build.tmp`, `backend/temp_debug.tmp` e `logs/cache_antigo.tmp`. Ao executar o `find` novamente, ele não retornou nada, o que confirma que a limpeza foi concluída e que não restou nenhum `.tmp` no projeto.
+
 **Raciocínio:**
 
 1. **Primeiro listei, sem apagar.** O `find . -name "*.tmp" -type f` procura a partir da pasta atual (`.`), de forma recursiva, por arquivos (`-type f`) cujo nome termina em `.tmp`. Conferir a lista antes evita apagar algo por engano.
@@ -99,13 +112,17 @@ ls -la backend/.env
 nano .gitignore
 ```
 
-Conteúdo do arquivo:
+Conteúdo final do arquivo:
 
 ```text
-*.tmp
-logs/*.log
+node_modules/
 backend/.env
+logs/*.log
+*.tmp
+pids/
 ```
+
+As linhas `*.tmp`, `logs/*.log` e `backend/.env` atendem ao enunciado. As outras duas são extras: `node_modules/` ignora as dependências do Node.js (que não devem ser versionadas) e `pids/` ignora os arquivos de PID gerados em tempo de execução.
 
 **Atalhos usados no `nano`:** **Ctrl+O** para salvar, **Enter** para confirmar o nome do arquivo e **Ctrl+X** para sair do editor.
 
@@ -197,4 +214,3 @@ Change: 2026-11-09 22:18:40.020453376 +0000
 - O `find` com `-name`, `-type`, `-exec`, `-mtime` e `-size` permite localizar e limpar arquivos com precisão, e vale sempre listar antes de apagar.
 - O `.gitignore` mantém fora do repositório os temporários, os logs e o `.env` com credenciais.
 - `file` e `stat` se complementam: o primeiro identifica o conteúdo pelo magic number, e o segundo expõe os metadados do arquivo.
-
